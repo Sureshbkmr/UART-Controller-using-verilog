@@ -1,0 +1,53 @@
+// 1. UART Transmitter
+module uart_tx (
+    input clk, reset,
+    input start,
+    input [7:0] tx_data,
+    output reg tx,
+    output reg busy
+);
+    parameter IDLE=0, START=1, DATA=2, STOP=3;
+    reg [1:0] state;
+    reg [3:0] bit_cnt;
+
+    always @(posedge clk) begin
+        if (reset) begin state <= IDLE; tx <= 1; busy <= 0; end
+        else begin
+            case (state)
+                IDLE: begin tx <= 1; busy <= 0; if (start) begin state <= START; busy <= 1; end end
+                START: begin tx <= 0; state <= DATA; bit_cnt <= 0; end
+                DATA: begin tx <= tx_data[bit_cnt]; if (bit_cnt == 7) state <= STOP; else bit_cnt <= bit_cnt + 1; end
+                STOP: begin tx <= 1; state <= IDLE; end
+            endcase
+        end
+    end
+endmodule
+
+// 2. UART Receiver
+module uart_rx (
+    input clk, reset,
+    input rx,
+    output reg [7:0] rx_data,
+    output reg rx_done
+);
+    parameter IDLE=0, START=1, DATA=2, STOP=3;
+    reg [1:0] state;
+    reg [3:0] bit_cnt;
+
+    always @(posedge clk) begin
+        if (reset) begin state <= IDLE; rx_done <= 0; end
+        else begin
+            case (state)
+                IDLE: begin rx_done <= 0; if (rx == 0) state <= START; end
+                START: begin state <= DATA; bit_cnt <= 0; end
+                DATA: begin rx_data[bit_cnt] <= rx; if (bit_cnt == 7) state <= STOP; else bit_cnt <= bit_cnt + 1; end
+                STOP: begin rx_done <= 1; state <= IDLE; end
+            endcase
+        end
+    end
+    
+    initial begin
+        $dumpfile("dump.vcd");
+        $dumpvars(0, uart_rx);
+    end
+endmodule

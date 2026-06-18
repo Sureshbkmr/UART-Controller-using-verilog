@@ -1,0 +1,22 @@
+module tb_uart;
+    reg clk, reset, start;
+    reg [7:0] tx_data;
+    wire tx, busy;
+
+    uart_tx uut (clk, reset, start, tx_data, tx, busy);
+
+    always #5 clk = ~clk;
+
+    initial begin
+        clk = 0; reset = 1; start = 0;
+        #20 reset = 0;
+        
+        
+        tx_data = 8'hA5; // 10100101
+        start = 1; #10; start = 0;
+        
+        wait(!busy); 
+        $display("Data Transmission Finished");
+        $finish;
+    end
+endmodule

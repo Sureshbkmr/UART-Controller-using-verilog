@@ -1,0 +1,54 @@
+module uart_tx (
+    input clk, reset,
+    input start,
+    input [7:0] tx_data,
+    output reg tx,
+    output reg busy
+);
+    // FSM States using parameters
+    parameter IDLE  = 2'b00,
+              START = 2'b01,
+              DATA  = 2'b10,
+              STOP  = 2'b11;
+              
+    reg [1:0] state;
+    reg [3:0] bit_cnt;
+
+    initial begin
+        $dumpfile("dump.vcd");
+        $dumpvars(0, uart_tx);
+    end
+
+    always @(posedge clk) begin
+        if (reset) begin
+            state <= IDLE;
+            tx <= 1;
+            busy <= 0;
+        end else begin
+            case (state)
+                IDLE: begin
+                    tx <= 1;
+                    busy <= 0;
+                    if (start) begin
+                        state <= START;
+                        busy <= 1;
+                    end
+                end
+                START: begin
+                    tx <= 0;
+                    state <= DATA;
+                    bit_cnt <= 0;
+                end
+                DATA: begin
+                    tx <= tx_data[bit_cnt];
+                    if (bit_cnt == 7) state <= STOP;
+                    else bit_cnt <= bit_cnt + 1;
+                end
+                STOP: begin
+                    tx <= 1;
+                    state <= IDLE;
+                end
+            endcase
+        end
+    end
+endmodule

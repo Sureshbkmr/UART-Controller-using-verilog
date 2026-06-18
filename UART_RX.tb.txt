@@ -1,0 +1,21 @@
+module tb_uart_full;
+    reg clk, reset, start;
+    reg [7:0] data_in;
+    wire [7:0] data_out;
+    wire done;
+    wire tx_line;
+
+    uart_tx tx_mod (clk, reset, start, data_in, tx_line, );
+    uart_rx rx_mod (clk, reset, tx_line, data_out, done);
+
+    always #5 clk = ~clk;
+
+    initial begin
+        clk = 0; reset = 1; start = 0; data_in = 8'hA5;
+        #20 reset = 0;
+        #10 start = 1; #10 start = 0;
+        wait(done);
+        $display("Received Data: %h", data_out);
+        $finish;
+    end
+endmodule
