@@ -25,6 +25,8 @@ This project implements a Universal Asynchronous Receiver-Transmitter (UART) con
 2. Compile the RTL and testbench: `iverilog -o sim uart_tx.v uart_rx.v uart_tb.v`
 3. Run the simulation: `vvp sim`
 4. Open the `.vcd` file in GTKWave to observe the signals.
+## FSM State Diagram
+![UART FSM](UART_FSM.png)
 
 ## Simulation Waveform
 ![Waveform](UART_TX.Waveform.png)
